@@ -2,9 +2,22 @@ name: Worker をデプロイ
 
 on:
   workflow_dispatch:
+    inputs:
+      project:
+        description: 一覧へ登録するライブラリ名。空欄なら、いまの一覧のままデプロイする
+        required: false
+        type: string
+      operation:
+        description: ライブラリ名に対する操作
+        required: false
+        type: choice
+        default: 追加
+        options:
+          - 追加
+          - 削除
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   deploy:
@@ -20,6 +33,19 @@ jobs:
         with:
           node-version: "22"
 
+      - name: 追加するライブラリの公開先を確認
+        if: inputs.project != '' && inputs.operation == '追加'
+        env:
+          PROJECT: ${{ inputs.project }}
+        run: curl -fsSI "https://ymm4.routersys.com/${PROJECT}/" > /dev/null
+
+      - name: 一覧を更新
+        id: register
+        env:
+          PROJECT: ${{ inputs.project }}
+          OPERATION: ${{ inputs.operation }}
+        run: node scripts/register.mjs "$PROJECT" "$OPERATION"
+
       - name: 振り分けを試験
         run: node worker/test.mjs
 
@@ -30,3 +56,18 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: worker
           command: deploy
+
+      - name: 一覧の変更をコミット
+        if: steps.register.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROJECT: ${{ inputs.project }}
+          OPERATION: ${{ inputs.operation }}
+        run: |
+          path=worker/projects.js
+          sha=$(gh api "repos/$GITHUB_REPOSITORY/contents/$path?ref=main" --jq .sha)
+          gh api --method PUT "repos/$GITHUB_REPOSITORY/contents/$path" \
+            -f message="${PROJECT}を${OPERATION}" \
+            -f content="$(base64 -w0 "$path")" \
+            -f sha="$sha" \
+            -f branch=main > /dev/null
