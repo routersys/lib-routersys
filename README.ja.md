@@ -2,7 +2,7 @@
 
 [English](README.md) | 日本語
 
-`lib.routersys.com`の入口として動くCloudflare Workerです。各ライブラリのサイトはGitHub Pagesで公開しており、このWorkerが`https://ymm4.routersys.com/<プロジェクト>/`の内容を`https://lib.routersys.com/<プロジェクト>/`として返します。httpはhttpsへ転送し、`robots.txt`には全プロジェクトのサイトマップを載せます。対象のプロジェクトは`worker/projects.js`の一覧にあります。
+`lib.routersys.com`の入口として動くCloudflare Workerです。各ライブラリのサイトはGitHub Pagesで公開しており、このWorkerが`https://ymm4.routersys.com/<プロジェクト>/`の内容を`https://lib.routersys.com/<プロジェクト>/`として返します。httpはhttpsへ転送し、`robots.txt`には全プロジェクトのサイトマップを載せます。対象のプロジェクトは、`worker/projects.js`の一覧のとおりです。
 
 ## 構成
 
