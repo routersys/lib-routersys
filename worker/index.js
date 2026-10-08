@@ -1,6 +1,7 @@
+import PROJECTS from "./projects.js";
+
 const SITE_HOST = "lib.routersys.com";
 const ORIGIN_HOST = "ymm4.routersys.com";
-const PROJECTS = ["WorldNet", "R128Net"];
 const ROBOTS = "User-agent: *\nAllow: /\n\n"
   + PROJECTS.map((name) => `Sitemap: https://${SITE_HOST}/${name}/sitemap.xml\n`).join("");
 
@@ -21,7 +22,7 @@ export default {
       return new Response(ROBOTS, { headers: { "content-type": "text/plain; charset=utf-8" } });
     }
 
-    if (url.pathname === "/") {
+    if (url.pathname === "/" && PROJECTS.length > 0) {
       return Response.redirect(`https://${SITE_HOST}/${PROJECTS[0]}/`, 302);
     }
 
